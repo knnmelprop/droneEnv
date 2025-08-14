@@ -21,16 +21,40 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     liblapack-dev \
     curl \
     tini \
+    # optional runtime deps for SU2 (serial usage)
+    libopenmpi-dev \
+    openmpi-bin \
     && rm -rf /var/lib/apt/lists/* && apt-get clean
 
 # Optional external tools install flag
 ARG INSTALL_EXTERNAL_TOOLS=false
 
-# Separate stage to optionally install external tools (gmsh available via apt; others left configurable)
+# Optional third-party tools
+ARG SU2_DOWNLOAD_URL=""
+ARG AVL_DOWNLOAD_URL=""
+
+# Separate stage to optionally install external tools (gmsh available via apt; others via URLs)
 FROM base AS tools
 RUN if [ "$INSTALL_EXTERNAL_TOOLS" = "true" ]; then \
       apt-get update && apt-get install -y --no-install-recommends gmsh && \
       rm -rf /var/lib/apt/lists/* && apt-get clean; \
+    fi
+
+# Install SU2 if URL provided
+RUN set -eux; \
+    if [ -n "$SU2_DOWNLOAD_URL" ]; then \
+      mkdir -p /opt/su2 && cd /opt/su2; \
+      curl -fsSL "$SU2_DOWNLOAD_URL" -o su2.tar.gz; \
+      tar -xzf su2.tar.gz --strip-components=1; \
+      rm -f su2.tar.gz; \
+      if [ -d /opt/su2/bin ]; then ln -sf /opt/su2/bin/SU2_CFD /usr/local/bin/SU2_CFD || true; fi; \
+    fi
+
+# Install AVL if URL provided (expects a single executable named avl or similar)
+RUN set -eux; \
+    if [ -n "$AVL_DOWNLOAD_URL" ]; then \
+      curl -fsSL "$AVL_DOWNLOAD_URL" -o /usr/local/bin/avl; \
+      chmod +x /usr/local/bin/avl; \
     fi
 
 # Final image
@@ -39,6 +63,8 @@ FROM base AS final
 # Copy tools from tools stage if built
 COPY --from=tools /usr/bin/gmsh /usr/bin/gmsh
 COPY --from=tools /usr/lib /usr/lib
+COPY --from=tools /opt/su2 /opt/su2
+COPY --from=tools /usr/local/bin/avl /usr/local/bin/avl
 
 # Create non-root user
 ARG USERNAME=suave
@@ -59,12 +85,15 @@ COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
 # Environment variables for external tools (can be overridden)
-ENV AVL_BIN="" \
-    SU2_BIN="" \
+ENV AVL_BIN="/usr/local/bin/avl" \
+    SU2_HOME="/opt/su2" \
+    SU2_RUN="/opt/su2/bin" \
+    SU2_BIN="/opt/su2/bin/SU2_CFD" \
     OPENVSP_BIN="" \
     GMSH_BIN="/usr/bin/gmsh" \
     JUPYTER_TOKEN="" \
-    PYTHONPATH="/workspace/trunk:/workspace/student_competition"
+    PYTHONPATH="/workspace/trunk:/workspace/student_competition" \
+    PATH="/opt/su2/bin:${PATH}"
 
 EXPOSE 8888
 

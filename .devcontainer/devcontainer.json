@@ -2,7 +2,12 @@
   "name": "SUAVE Tutorial Environment (Git LFS + Codespaces Optimized)",
   "build": {
     "dockerfile": "Dockerfile",
-    "context": "."
+    "context": ".",
+    "args": {
+      "INSTALL_EXTERNAL_TOOLS": "true",
+      "SU2_DOWNLOAD_URL": "",
+      "AVL_DOWNLOAD_URL": ""
+    }
   },
   "customizations": {
     "vscode": {
