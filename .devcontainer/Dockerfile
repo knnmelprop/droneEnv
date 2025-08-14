@@ -24,6 +24,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     tree \
     tini \
+    unzip \
     && rm -rf /var/lib/apt/lists/* && apt-get clean
 
 # Upgrade pip toolchain and install Python dependencies globally
@@ -35,10 +36,10 @@ RUN python -m pip install --upgrade pip setuptools wheel && \
 RUN set -eux; \
     if [ -n "$SU2_DOWNLOAD_URL" ]; then \
       mkdir -p /opt/su2 && cd /opt/su2; \
-      curl -fsSL "$SU2_DOWNLOAD_URL" -o su2.tar.gz; \
-      if [ -n "$SU2_SHA256" ]; then echo "$SU2_SHA256  su2.tar.gz" | sha256sum -c -; fi; \
-      tar -xzf su2.tar.gz --strip-components=1; \
-      rm -f su2.tar.gz; \
+      curl -fsSL "$SU2_DOWNLOAD_URL" -o su2.zip; \
+      if [ -n "$SU2_SHA256" ]; then echo "$SU2_SHA256  su2.zip" | sha256sum -c -; fi; \
+      unzip -q su2.zip; \
+      rm -f su2.zip; \
       if [ -d /opt/su2/bin ]; then ln -sf /opt/su2/bin/SU2_CFD /usr/local/bin/SU2_CFD || true; fi; \
     fi
 

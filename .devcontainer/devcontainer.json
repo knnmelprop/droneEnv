@@ -5,8 +5,8 @@
     "context": ".",
     "args": {
       "INSTALL_EXTERNAL_TOOLS": "true",
-      "SU2_DOWNLOAD_URL": "https://github.com/su2code/SU2/releases/download/v8.2.0/SU2-8.2.0-Linux.tar.gz",
-      "SU2_SHA256": "fa56a890c16ca83715d7e62b351ff0528fcb92f70100129caf6382a8945b95fb",
+      "SU2_DOWNLOAD_URL": "https://github.com/su2code/SU2/releases/download/v8.2.0/SU2-v8.2.0-linux64.zip",
+      "SU2_SHA256": "",
       "AVL_DOWNLOAD_URL": "http://web.mit.edu/drela/Public/web/avl/avl3.40b.tgz"
     }
   },
