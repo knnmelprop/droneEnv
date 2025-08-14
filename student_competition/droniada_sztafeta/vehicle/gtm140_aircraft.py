@@ -266,14 +266,14 @@ def define_vehicle():
     #   Payload Bay (Beacon Drop System)
     # ------------------------------------------------------------------
     
-    payload_bay = SUAVE.Components.Payloads.Payload()
+    # Add payload to the engine network instead of vehicle directly
+    payload_bay = SUAVE.Components.Energy.Peripherals.Payload()
     payload_bay.tag = 'beacon_drop_system'
-    payload_bay.origin = [[0.5, 0, -0.1]] * Units.meter  # Below wing
+    payload_bay.power_draw = 0.0 * Units.watts  # No electrical power required
     payload_bay.mass_properties.mass = 1.0 * Units.kg  # 4 beacons + mechanism
-    payload_bay.mass_properties.center_of_gravity = [[0.5, 0, -0.1]] * Units.meter
     
-    # add to vehicle
-    vehicle.append_component(payload_bay)
+    # Add payload to the engine network
+    turbojet_engine.payload = payload_bay
     
     # ------------------------------------------------------------------
     #   Vehicle Definition Complete
