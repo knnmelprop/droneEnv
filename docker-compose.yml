@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  suave-dev:
+    build:
+      context: .
+      dockerfile: .devcontainer/Dockerfile
+    container_name: suave-local-dev
+    volumes:
+      - .:/workspaces
+      - suave-cache:/root/.cache
+    working_dir: /workspaces
+    environment:
+      - PYTHONPATH=/workspaces/trunk
+      - PYTHONUNBUFFERED=1
+    ports:
+      - "8888:8888"  # For Jupyter if needed
+    stdin_open: true
+    tty: true
+    command: /bin/bash
+
+volumes:
+  suave-cache:
