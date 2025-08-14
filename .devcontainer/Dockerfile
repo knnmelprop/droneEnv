@@ -49,10 +49,12 @@ RUN set -eux; \
         *.tgz|*.tar.gz) \
           mkdir -p /opt/avl-src && cd /opt/avl-src; \
           curl -fsSL "$AVL_DOWNLOAD_URL" -o avl.tgz; \
-          tar -xzf avl.tgz --strip-components=0; \
+          topdir=$(tar -tzf avl.tgz | head -1 | cut -f1 -d/); \
+          tar -xzf avl.tgz; \
           rm -f avl.tgz; \
+          cd "$topdir"; \
           make; \
-          if [ -f avl ]; then install -m 0755 avl /usr/local/bin/avl; fi; \
+          install -m 0755 avl /usr/local/bin/avl; \
           ;; \
         *) \
           curl -fsSL "$AVL_DOWNLOAD_URL" -o /usr/local/bin/avl; \
