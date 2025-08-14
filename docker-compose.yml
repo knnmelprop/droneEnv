@@ -1,0 +1,35 @@
+version: "3.9"
+
+services:
+  suave:
+    build:
+      context: ./docker
+      dockerfile: Dockerfile
+      args:
+        PYTHON_VERSION: "3.10"
+        INSTALL_EXTERNAL_TOOLS: "false"
+    image: suave-student:latest
+    container_name: suave-student
+    working_dir: /workspace
+    entrypoint: ["/usr/bin/tini", "--", "/usr/local/bin/entrypoint.sh"]
+    command: ["jupyter"]
+    environment:
+      - MPLBACKEND=Agg
+      - PYTHONUNBUFFERED=1
+      - PYTHONPATH=/workspace/trunk:/workspace/student_competition
+      - JUPYTER_TOKEN=
+      - PORT=8888
+      - AVL_BIN=
+      - SU2_BIN=
+      - OPENVSP_BIN=
+      - GMSH_BIN=/usr/bin/gmsh
+    volumes:
+      - ./:/workspace:delegated
+      - suave-cache:/root/.cache
+    ports:
+      - "8888:8888"
+    tty: true
+    stdin_open: true
+
+volumes:
+  suave-cache:
