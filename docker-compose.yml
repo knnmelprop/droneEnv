@@ -8,11 +8,9 @@ services:
       args:
         PYTHON_VERSION: "3.10"
         INSTALL_EXTERNAL_TOOLS: "true"
-        # Optionally provide SU2 and AVL downloads (set to empty to skip)
-        # e.g., SU2 v8 prebuilt tar.gz for Linux x86_64
-        SU2_DOWNLOAD_URL: ""
-        # e.g., direct URL to avl binary (user-provided hosting)
-        AVL_DOWNLOAD_URL: ""
+        SU2_DOWNLOAD_URL: "https://github.com/su2code/SU2/releases/download/v8.2.0/SU2-8.2.0-Linux.tar.gz"
+        SU2_SHA256: "fa56a890c16ca83715d7e62b351ff0528fcb92f70100129caf6382a8945b95fb"
+        AVL_DOWNLOAD_URL: "http://web.mit.edu/drela/Public/web/avl/avl3.40b.tgz"
     image: suave-student:latest
     container_name: suave-student
     working_dir: /workspace

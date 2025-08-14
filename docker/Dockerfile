@@ -10,20 +10,23 @@ ENV DEBIAN_FRONTEND=noninteractive \
     POETRY_VIRTUALENVS_CREATE=false \
     MPLBACKEND=Agg
 
-# Common OS deps (runtime)
+# Common OS deps (runtime + build)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     build-essential \
     git \
     git-lfs \
     gfortran \
+    gcc \
+    g++ \
+    make \
     libopenblas-dev \
     liblapack-dev \
-    curl \
-    tini \
-    # optional runtime deps for SU2 (serial usage)
     libopenmpi-dev \
     openmpi-bin \
+    libx11-dev \
+    curl \
+    tini \
     && rm -rf /var/lib/apt/lists/* && apt-get clean
 
 # Optional external tools install flag
@@ -31,6 +34,7 @@ ARG INSTALL_EXTERNAL_TOOLS=false
 
 # Optional third-party tools
 ARG SU2_DOWNLOAD_URL=""
+ARG SU2_SHA256=""
 ARG AVL_DOWNLOAD_URL=""
 
 # Separate stage to optionally install external tools (gmsh available via apt; others via URLs)
@@ -40,21 +44,34 @@ RUN if [ "$INSTALL_EXTERNAL_TOOLS" = "true" ]; then \
       rm -rf /var/lib/apt/lists/* && apt-get clean; \
     fi
 
-# Install SU2 if URL provided
+# Install SU2 if URL provided (with optional SHA256 verification)
 RUN set -eux; \
     if [ -n "$SU2_DOWNLOAD_URL" ]; then \
       mkdir -p /opt/su2 && cd /opt/su2; \
       curl -fsSL "$SU2_DOWNLOAD_URL" -o su2.tar.gz; \
+      if [ -n "$SU2_SHA256" ]; then echo "$SU2_SHA256  su2.tar.gz" | sha256sum -c -; fi; \
       tar -xzf su2.tar.gz --strip-components=1; \
       rm -f su2.tar.gz; \
       if [ -d /opt/su2/bin ]; then ln -sf /opt/su2/bin/SU2_CFD /usr/local/bin/SU2_CFD || true; fi; \
     fi
 
-# Install AVL if URL provided (expects a single executable named avl or similar)
+# Install AVL: support direct binary or source tarball build
 RUN set -eux; \
     if [ -n "$AVL_DOWNLOAD_URL" ]; then \
-      curl -fsSL "$AVL_DOWNLOAD_URL" -o /usr/local/bin/avl; \
-      chmod +x /usr/local/bin/avl; \
+      case "$AVL_DOWNLOAD_URL" in \
+        *.tgz|*.tar.gz) \
+          mkdir -p /opt/avl-src && cd /opt/avl-src; \
+          curl -fsSL "$AVL_DOWNLOAD_URL" -o avl.tgz; \
+          tar -xzf avl.tgz --strip-components=0; \
+          rm -f avl.tgz; \
+          make; \
+          if [ -f avl ]; then install -m 0755 avl /usr/local/bin/avl; fi; \
+          ;; \
+        *) \
+          curl -fsSL "$AVL_DOWNLOAD_URL" -o /usr/local/bin/avl; \
+          chmod +x /usr/local/bin/avl; \
+          ;; \
+      esac; \
     fi
 
 # Final image
