@@ -54,6 +54,27 @@ RUN set -eux; \
           tar -xzf avl.tgz; \
           rm -f avl.tgz; \
           cd "$topdir"; \
+          # Create a simple Makefile for AVL compilation \
+          cat > Makefile << 'EOF' \
+          FC = gfortran \
+          FFLAGS = -O2 -fdefault-real-8 -fdefault-double-8 \
+          LIBS = -L./plotlib -lPlt_gDP \
+          \
+          SRCS = src/*.f \
+          OBJS = $(SRCS:.f=.o) \
+          \
+          avl: $(OBJS) \
+          \t$(FC) $(FFLAGS) -o avl $(OBJS) $(LIBS) \
+          \
+          %.o: %.f \
+          \t$(FC) $(FFLAGS) -c $< -o $@ \
+          \
+          clean: \
+          \t\trm -f *.o avl \
+          EOF \
+          # Build plotlib first \
+          cd plotlib && make -f Makefile && cd ..; \
+          # Build AVL \
           make; \
           install -m 0755 avl /usr/local/bin/avl; \
           ;; \
