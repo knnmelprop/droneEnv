@@ -1,0 +1,13 @@
+numpy
+scipy
+matplotlib
+pandas
+scikit-learn
+plotly
+jupyterlab
+ipykernel
+ipywidgets
+seaborn
+numba
+black
+pylint
